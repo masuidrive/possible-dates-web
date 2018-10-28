@@ -1,0 +1,28 @@
+{
+  "name": "new",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "src/index.js",
+  "dependencies": {
+    "firebase": "5.5.0",
+    "lodash": "latest",
+    "moment": "2.22.2",
+    "moment-timezone": "0.5.21",
+    "react": "16.5.2",
+    "react-big-calendar": "0.19.2",
+    "react-dnd": "5.0.0",
+    "react-dnd-html5-backend": "5.0.1",
+    "react-dom": "16.5.2",
+    "react-scripts": "2.0.3",
+    "semantic-ui-css": "latest",
+    "semantic-ui-react": "0.83.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}

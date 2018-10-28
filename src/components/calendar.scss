@@ -1,0 +1,58 @@
+.calendar {
+  .time-label {
+    position: absolute;
+    font-size: 12px;
+    left: 0;
+    text-align: right;
+    color: gray;
+    width: 100%;
+    padding-right: 2px;
+  }
+
+  .day {
+    padding: 0 !important;
+    height: 24 * 64px;
+
+    .vertical-line {
+      border-right: 1px solid gray;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .event {
+      position: absolute;
+      right: 0;
+      padding: 2px;
+      font-size: 12px;
+      line-height: 13px;
+      border-radius: 3px;
+      overflow: hidden;
+
+      &.level-1 {
+        width: 90%;
+      }
+      &.level-2 {
+        border: 1px solid white;
+        width: 85%;
+      }
+      &.level-3 {
+        border: 1px solid white;
+        width: 80%;
+      }
+      &.level-4 {
+        border: 1px solid white;
+        width: 75%;
+      }
+    }
+
+    .horizontal-line {
+      border-top: 1px solid gray;
+      position: absolute;
+      width: 100%;
+      height: 1px;
+      z-index: -1;
+    }
+  }
+}
