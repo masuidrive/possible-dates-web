@@ -4,7 +4,7 @@ import moment from "moment-timezone";
 import { Button, Icon, Grid, Segment } from "semantic-ui-react";
 import "./calendar.scss";
 
-export default class CalendarComponent extends React.Component {
+export default class CalendarDayComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};

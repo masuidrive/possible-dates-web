@@ -1,0 +1,10 @@
+node:
+  build: .
+  dockerfile: Dockerfile
+  command:
+    [ "yarn", "run", "start" ]
+  ports:
+    - "3000:3000"
+  volumes:
+    - "/usr/src/app/node_modules"
+    - ".:/usr/src/app"
