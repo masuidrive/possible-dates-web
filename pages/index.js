@@ -1,32 +1,44 @@
 // store.js
-import { observable, action, computed } from "mobx";
+import { observable, action, computed } from "mobx"
 // MyComponent.js
-import React from "react";
-import { observer } from "mobx-react";
-import ReactDOM from "react-dom";
-import stores from './stores';
+import React from "react"
+import { inject, observer, Provider } from "mobx-react"
+import { SessionSignedIn, SessionSignedOut, SessionNotReady } from "../src/components/SessionComponents"
+import stores from '../src/stores'
 
-const App = observer(({counterStore}) => (
+const App = inject("counterStore", "sessionStore")(observer(({counterStore, sessionStore}) => (
   <div>
-    <button onClick={() => counterStore.increment()}>+1</button>
-    <span>{counterStore.counter}</span>
-    <button onClick={() => counterStore.decrement()}>-1</button>
-    <div>
-      {" "}
-      <button onClick={() => counterStore.doTest1()}>Test1</button>
-      {counterStore.test1[0].msg}
-    </div>
-  </div>
-))
+    <SessionNotReady>
+      Loading
+    </SessionNotReady>
 
-ReactDOM.render(
+    <SessionSignedIn>
+      <div>
+        <button onClick={() => counterStore.increment()}>+1</button>
+        <span>{counterStore.counter}</span>
+        <button onClick={() => counterStore.decrement()}>-1</button>
+        <div>
+          {" "}
+          <button onClick={() => counterStore.doTest1()}>Test1</button>
+          {counterStore.test1[0].msg}
+        </div>
+        <div>{sessionStore.status}</div>
+      </div>
+    </SessionSignedIn>
+    
+    <SessionSignedOut>
+      <button onClick={() => sessionStore.doSignIn()}>Sign In</button>
+    </SessionSignedOut>
+  </div>
+)))
+
+export default () => (
   <Provider { ...stores }>
     <App />
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 )
 
-export default observer(Counter);
+//export default observer(Counter);
 /*
 import _ from "lodash";
 import React, { ReactNode, SyntheticEvent } from "react";

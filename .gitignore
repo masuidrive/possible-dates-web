@@ -1,2 +1,5 @@
 /tmp
+/dist
+/.cache
+/.next
 .DS_Store
