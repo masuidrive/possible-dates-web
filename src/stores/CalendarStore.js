@@ -1,7 +1,9 @@
 import _ from "lodash"
-import { observable, action, computed } from 'mobx'
+import { observable, action, computed } from "mobx"
+import moment from "moment-timezone"
 import CalendarEntry from "./entries/CalendarEntry"
 import CalendarListLoader from "./loaders/CalendarListLoader"
+import EventLoader from "./loaders/EventLoader"
 
 export class FetchEventsRequest {
   constructor(startAt, endAt) {
@@ -17,49 +19,37 @@ export default class CalendarStore {
   @observable activeCalendars = []
   @observable calendarListLoader = undefined
 
+  constructor(rootStore) {
+    this.rootStore = rootStore
+  }
+
   // google calendar listを読み込む
   // 最初に一回読み込むだけでいい。localStorageでcacheしてもいいかも
   @action async loadCalendarList() {
     if (this.calendarListLoader !== undefined) return
 
-    this.calendarListLoader = new CalendarListLoader()
+    const gapi = this.rootStore.sessionStore.gapi
+    this.calendarListLoader = new CalendarListLoader(gapi)
     var loader = await this.calendarListLoader.perform()
-    if(loader.isUnauthorized()) {
 
-      this.calendarListLoader = undefined
+    if(loader.isUnauthorized) {
+      console.log("loadCalendarList: 5")
     }
-    else if(loader.hasError()) {
-      
-
-      this.calendarListLoader = undefined
+    else if(loader.hasError) {
+      console.log("loadCalendarList: 6")
     }
-    this.calendars = loader.items
+    else {
+      this.calendars = loader.items
+    }
     this.calendarListLoader = undefined
-
-    ApiCalendar.gapi.client.calendar.calendarList
-      .list({
-        showHidden: false,
-        showDeleted: false,
-        minAccessRole: "reader",
-        maxResults: 250
-      })
-      .then(({ result }) => {
-        this.calendars = _.fromPairs(
-          result.items.map(calData => new CalendarEntry(calData)),
-          cal => [cal.id, cal]
-        )
-        // TODO: とりあえず全部active
-        this.activeCalendars = _.keys(this.calendars)
-      })
-      .catch(e => {
-        if (e.status === 401) {
-          this._raiseUnauthorized()
-        } else {
-          console.error(e)
-          this._raiseAPIError()
-        }
-      })
+    this.loadEvents(moment(), moment().add(7, "days"))
   }
 
-  // eventを読み込む
+  @action async loadEvents(startAt, endAt) {
+    const gapi = this.rootStore.sessionStore.gapi
+    const loader = new EventLoader(gapi, this.calendars, startAt, endAt)
+    const result = await loader.perform()
+    console.log("result", result)
+  }
+
 }
