@@ -12,7 +12,7 @@ if (!firebase.apps.length) {
     projectId: "schedule1-d3f0f",
     storageBucket: "schedule1-d3f0f.appspot.com",
     messagingSenderId: "712271184102" // Cloud Messaging
-  });
+  })
 }
 
 export default class SessionStore {
@@ -107,6 +107,7 @@ export default class SessionStore {
    * Auth to the google Api.
    */
   initAPIClient(gapi) {
+    console.log("initAPIClient", gapi);
     this.gapi = gapi
     this.status = "loaded"
     this.gapi.client
@@ -115,14 +116,14 @@ export default class SessionStore {
         // Listen for sign-in state changes.
         this.gapi.auth2
           .getAuthInstance()
-          .isSignedIn.listen(this.updateSigninStatus)
+          .isSignedIn.listen((isSignedIn) => this.updateSigninStatus(isSignedIn))
         // Handle the initial sign-in state.
         this.updateSigninStatus(
           this.gapi.auth2.getAuthInstance().isSignedIn.get()
         )
       })
       .catch(err => {
-        this.status =  "error:load"
+        this.status = "error:load"
         console.error("init api error", err);
       });
   }

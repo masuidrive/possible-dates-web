@@ -149,7 +149,7 @@ export default class CalendarDayComponent extends React.Component {
                       key={event[1].id}
                       className={`event level-${event[0] + 1}`}
                       style={{
-                        backgroundColor: this.lightenDarkenColor(
+                        borderColor: this.lightenDarkenColor(
                           event[1].backgroundColor,
                           -30
                         ),

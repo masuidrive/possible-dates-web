@@ -26,11 +26,13 @@ export default class EventLoader {
       )
       console.log("promises",promises)
 
-      Promise.all(promises).then(items => (this.items = items)).catch(err => reject(this))
-      this.status = "loaded"
-      console.log("items",this.status , this.items)
-
-      resolve(this.items)
+      Promise.all(promises).then(items => {
+        console.log("items[0]",items,items[0])
+        this.items = items
+        this.status = "loaded"
+        resolve(this.items)
+      })
+      .catch(err => reject(this))
     })
   }
 
@@ -46,9 +48,9 @@ export default class EventLoader {
         maxResults: 2500
       })
       .then(({ result }) => {
-        console.log(result.items)
-        const events = result.items.map((event) => new EventEntry(event))
-        resolve([calendar, events])
+        console.log("_loadCalendarEvents", result.items)
+        const events = result.items.map((event) => new EventEntry(event, calendar))
+        resolve({calendar: calendar, events: events})
       })
       .catch(e => {
         if (e.status === 401) {
@@ -79,40 +81,3 @@ export default class EventLoader {
     return this.status === "loaded"
   }
 }
-
-
-/*
-  // Google CalendarのデータをBigCalendarにマッピング
-  events() {
-    return _.flatten(
-      _.values(this.props.events).map(e =>
-        e.items
-          .filter(
-            i =>
-              ["confirmed"].indexOf(i.status) >= 0 &&
-              !_.find(
-                i.attendees,
-                a => a.self && a.responseStatus == "declined"
-              )
-          )
-          .map(i => ({
-            id: i.id,
-            title: i.summary,
-            backgroundColor: e.calendar.backgroundColor,
-            popup: true,
-            isAllDay: !!i["start"].date,
-            start: moment(i["start"].dateTime || i["start"].date),
-            end: moment(i["end"].dateTime || i["end"].date)
-          }))
-      )
-    );
-  }
-
-  eventsOfDay(date) {
-    const startAt = moment(date).startOf("day");
-    const endAt = moment(startAt).endOf("day");
-    return this.events().filter(
-      e => e.start.isSameOrBefore(endAt) && startAt.isSameOrBefore(e.end)
-    );
-  }
-*/

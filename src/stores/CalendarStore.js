@@ -18,6 +18,7 @@ export default class CalendarStore {
   @observable eventsOfDay = {}
   @observable activeCalendars = []
   @observable calendarListLoader = undefined
+  @observable events = []
 
   constructor(rootStore) {
     this.rootStore = rootStore
@@ -26,6 +27,7 @@ export default class CalendarStore {
   // google calendar listを読み込む
   // 最初に一回読み込むだけでいい。localStorageでcacheしてもいいかも
   @action async loadCalendarList() {
+    console.log("loadCalendarList")
     if (this.calendarListLoader !== undefined) return
 
     const gapi = this.rootStore.sessionStore.gapi
@@ -48,8 +50,16 @@ export default class CalendarStore {
   @action async loadEvents(startAt, endAt) {
     const gapi = this.rootStore.sessionStore.gapi
     const loader = new EventLoader(gapi, this.calendars, startAt, endAt)
-    const result = await loader.perform()
-    console.log("result", result)
+    this.events = await loader.perform()
+    this.events = loader.items
+/*
+    console.log>(">>>>>result")
+    loader.items.forEach(item => {
+      item.events.forEach(event => {
+        console.log(event)
+      })
+    })
+    console.log("<<<<<result")
+*/
   }
-
 }

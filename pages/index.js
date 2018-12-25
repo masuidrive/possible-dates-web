@@ -15,12 +15,14 @@ class Cal extends React.Component {
   }
 
   render() {
+    console.log("render Cal()", this.props.calendarStore.events)
     const calendars = this.props.calendarStore.calendars
     return (
       <div>
         {
           calendars ? calendars.map((c) => c.name).join(", ") : "empty"
         }
+        <CalendarComponent events={ this.props.calendarStore.events || [] }/>
       </div>
     )
   }
@@ -29,7 +31,7 @@ class Cal extends React.Component {
 const App = inject("sessionStore")(observer(({sessionStore}) => (
   <div>
     <SessionNotReady>
-      Loading
+      Loading...
     </SessionNotReady>
 
     <SessionSignedIn>
