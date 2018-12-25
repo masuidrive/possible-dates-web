@@ -19,7 +19,6 @@ export default class CalendarComponent extends React.Component {
     this.hourHeight = 64
     this.dayHeaderHeight = 64
     this.timeHeaderWidth = 1
-    console.log("CalendarComponent:init", props)
   }
 
   // Google CalendarのデータをBigCalendarにマッピング
@@ -56,12 +55,20 @@ export default class CalendarComponent extends React.Component {
   eventsOfDay(date) {
     const startAt = moment(date).startOf("day")
     const endAt = moment(startAt).endOf("day")
-    console.log("eventsOfDay",date.toISOString(),this.events().filter(
-      e => e.start.isSameOrBefore(endAt) && startAt.isSameOrBefore(e.end)
-    ))
-    
     return this.events().filter(
       e => e.start.isSameOrBefore(endAt) && startAt.isSameOrBefore(e.end)
+    )
+  }
+
+  candidates() {
+    return [{start: moment(), end:moment().add(1, "hour")},{start: moment().add(15,"minutes"),end: moment().add(1, "hour").add(15,"minutes")}]
+  }
+
+  candidatesOfDay(date) {
+    const startAt = moment(date).startOf("day")
+    const endAt = moment(startAt).endOf("day")
+    return this.candidates().filter(
+      e => e.start.isSameOrBefore(endAt) && startAt.isSameOrBefore(moment(e.end))
     )
   }
 
@@ -90,15 +97,22 @@ export default class CalendarComponent extends React.Component {
       })
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+
+  }
 
   render() {
     const startAt = moment().startOf("day")
     var eventsOfWeek = _.times(7, i => {
-        const date = moment(startAt).add(i, "day")
-        return this.eventIndent(this.eventsOfDay(date).filter(e => !e.isAllDay(date)))
-      }
-    )
+      const date = moment(startAt).add(i, "day")
+      return this.eventIndent(this.eventsOfDay(date).filter(e => !e.isAllDay(date)))
+    }
+  )
+  var candidatesOfWeek = _.times(7, i => {
+    const date = moment(startAt).add(i, "day")
+    return this.eventIndent(this.candidatesOfDay(date))
+  }
+)
 
     return (
       <div>
@@ -145,8 +159,6 @@ export default class CalendarComponent extends React.Component {
           ))}
         </div>
         <Grid columns="equal" className="calendar">
-{/**
-*/}
           <Grid.Row>
             {_.times(7, i => {
               const date = moment(startAt).add(i, "days")
@@ -160,7 +172,9 @@ export default class CalendarComponent extends React.Component {
                       console.log(i, parseInt(e.y/64,10))
                       e.preventDefault()
                   }}>
+                    
                     <div className="vertical-line" />
+
                     { eventsOfWeek[i].map(event => {
                       const startPos = Math.max(
                         event[1].start.diff(date) / (60 * 1000),
@@ -195,6 +209,34 @@ export default class CalendarComponent extends React.Component {
                         </div>
                       )
                     })}
+                    
+                    { candidatesOfWeek[i].map(event => {
+                      const startPos = Math.max(
+                        event[1].start.diff(date) / (60 * 1000),
+                        0
+                      )
+                      const endPos = Math.min(
+                        moment(event[1].end).diff(date) / (60 * 1000),
+                        24 * 60
+                      )
+
+                      return (
+                        <div
+                          key={event[1].id}
+                          className={`event level-${event[0] + 1}`}
+                          style={{
+                            borderColor: "white",
+                            color: "white",
+                            backgroundColor: "#CE3B27",
+                            top: startPos * (this.hourHeight / 60) + 1,
+                            height: (endPos - startPos) * (this.hourHeight / 60) - 1
+                          }}
+                        >
+                          {event[1].start.format("hh:mm")}
+                        </div>
+                      )
+                    })}
+
                     {_.times(23, i2 => (
                       <div
                         className="horizontal-line"
