@@ -4,29 +4,8 @@ import { observable, action, computed } from "mobx"
 import React from "react"
 import { inject, observer, Provider } from "mobx-react"
 import { SessionSignedIn, SessionSignedOut, SessionNotReady } from "../src/components/SessionComponents"
-import CalendarComponent from  "../src/components/CalendarComponent"
+import CalendarPage from "../src/components/CalendarPage"
 import stores from '../src/stores'
-
-@inject("calendarStore")
-@observer
-class Cal extends React.Component {
-  componentDidMount() {
-    this.props.calendarStore.loadCalendarList()
-  }
-
-  render() {
-    console.log("render Cal()", this.props.calendarStore.events)
-    const calendars = this.props.calendarStore.calendars
-    return (
-      <div>
-        {
-          calendars ? calendars.map((c) => c.name).join(", ") : "empty"
-        }
-        <CalendarComponent events={ this.props.calendarStore.events || [] }/>
-      </div>
-    )
-  }
-}
 
 const App = inject("sessionStore")(observer(({sessionStore}) => (
   <div>
@@ -35,7 +14,7 @@ const App = inject("sessionStore")(observer(({sessionStore}) => (
     </SessionNotReady>
 
     <SessionSignedIn>
-      <Cal/>
+      <CalendarPage/>
     </SessionSignedIn>
     
     <SessionSignedOut>

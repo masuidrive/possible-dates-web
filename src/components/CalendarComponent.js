@@ -1,13 +1,15 @@
 import _ from "lodash"
 import React, { ReactNode, SyntheticEvent } from "react"
 import moment from "moment-timezone"
-import { Button, Icon, Grid, Segment, Sticky } from "semantic-ui-react"
+import { Button, Icon, Grid, Segment,Sticky } from "semantic-ui-react"
 import ReactCursorPosition from 'react-cursor-position'
 import Clickable from './shared/Clickable'
 import lightenDarkenColor from '../lib/lightenDarkenColor'
 import "./calendar.scss"
 import "semantic-ui-css/semantic.css"
 import stores from '../stores'
+import StickyBox from 'react-sticky-box'
+import { inspect } from "util"
 
 
 export default class CalendarComponent extends React.Component {
@@ -101,97 +103,105 @@ export default class CalendarComponent extends React.Component {
     )
 
     return (
-      <Grid columns="equal" className="calendar" style={{position: "sticky"}}>
-        <Grid.Row className="day-header-row">
-          <Grid.Column width={this.timeHeaderWidth}>
-          </Grid.Column>
-          {_.times(7, i => {
-            const date = moment(startAt).add(i, "days")
-            return (
-              <Grid.Column
-                className="day-header"
-                key={`day-header:${i}`}
-              >
-                <div className="day-label">
-                  { date.date() == 1 ? `${date.month()+1}/1` : date.date() }
+      <div>
+        <StickyBox>
+          <Grid columns="equal" className="calendar-header">
+            <Grid.Row className="day-header-row">
+              <Grid.Column width={this.timeHeaderWidth}>
+              </Grid.Column>
+              {_.times(7, i => {
+                const date = moment(startAt).add(i, "days")
+                return (
+                  <Grid.Column
+                    className="day-header"
+                    key={`day-header:${i}`}
+                  >
+                    <div className="day-label">
+                      { date.date() == 1 ? `${date.month()+1}/1` : date.date() }
+                    </div>
+                    <div className="wday-label">
+                      { date.format('ddd') }
+                    </div>
+                  </Grid.Column>
+                )
+              })}
+            </Grid.Row>
+          </Grid>
+        </StickyBox>
+        <Grid columns="equal" className="calendar">
+          <Grid.Row >
+            <Grid.Column width={this.timeHeaderWidth} className="time-header">
+              {_.times(23, i => (
+                <div
+                  className="time-label"
+                  style={{ top: (i + 1) * this.hourHeight - 8 }}
+                  key={`time-label:${i}`}
+                >
+                  {i + 1}:00
                 </div>
-              </Grid.Column>
-            )
-          })}
-        </Grid.Row>
+              ))}
+            </Grid.Column>
+            {_.times(7, i => {
+              const date = moment(startAt).add(i, "days")
+              return (
+                <Grid.Column
+                  className="day"
+                  key={`calendar:${i}`}
+                >
+                  <Clickable
+                    onClick={e => {
+                      console.log(i, parseInt(e.y/64,10))
+                      e.preventDefault()
+                  }}>
+                    <div className="vertical-line" />
+                    { eventsOfWeek[i].map(event => {
+                      const startPos = Math.max(
+                        event[1].start.diff(date) / (60 * 1000),
+                        0
+                      );
+                      const endPos = Math.min(
+                        event[1].end.diff(date) / (60 * 1000),
+                        24 * 60
+                      );
 
-        <Grid.Row style={{padding: 0}}>
-          <Grid.Column width={this.timeHeaderWidth} className="time-header">
-            {_.times(23, i => (
-              <div
-                className="time-label"
-                style={{ top: (i + 1) * this.hourHeight - 8 }}
-                key={`time-label:${i}`}
-              >
-                {i + 1}:00
-              </div>
-            ))}
-          </Grid.Column>
-          {_.times(7, i => {
-            const date = moment(startAt).add(i, "days")
-            return (
-              <Grid.Column
-                className="day"
-                key={`calendar:${i}`}
-              >
-                <Clickable
-                  onClick={e => {
-                    console.log(i, parseInt(e.y/64,10))
-                    e.preventDefault()
-                }}>
-                  <div className="vertical-line" />
-                  { eventsOfWeek[i].map(event => {
-                    const startPos = Math.max(
-                      event[1].start.diff(date) / (60 * 1000),
-                      0
-                    );
-                    const endPos = Math.min(
-                      event[1].end.diff(date) / (60 * 1000),
-                      24 * 60
-                    );
-
-                    return event[1].isAllDay(date) ? (
-                      undefined
-                    ) : (
+                      return event[1].isAllDay(date) ? (
+                        undefined
+                      ) : (
+                        <div
+                          key={event[1].id}
+                          className={`event level-${event[0] + 1}`}
+                          style={{
+                            borderColor: lightenDarkenColor(
+                              event[1].backgroundColor,
+                              -30
+                            ),
+                            color: lightenDarkenColor(
+                              event[1].backgroundColor,
+                              -30
+                            ),
+                            backgroundColor: "#fafafa",
+                            top: startPos * (this.hourHeight / 60) + 1,
+                            height: (endPos - startPos) * (this.hourHeight / 60) - 1
+                          }}
+                        >
+                          {event[1].title}
+                        </div>
+                      )
+                    })}
+                    {_.times(23, i2 => (
                       <div
-                        key={event[1].id}
-                        className={`event level-${event[0] + 1}`}
-                        style={{
-                          borderColor: lightenDarkenColor(
-                            event[1].backgroundColor,
-                            -30
-                          ),
-                          color: lightenDarkenColor(
-                            event[1].backgroundColor,
-                            -30
-                          ),
-                          backgroundColor: "#fafafa",
-                          top: startPos * (this.hourHeight / 60) + 1,
-                          height: (endPos - startPos) * (this.hourHeight / 60) - 1
-                        }}
-                      >
-                        {event[1].title}
-                      </div>
-                    )
-                  })}
-                  {_.times(23, i2 => (
-                    <div
-                      className="horizontal-line"
-                      style={{ top: (i2 + 1) * this.hourHeight }}
-                      key={`line:${i2}`}
-                    />
-                  ))}
-                </Clickable>
-              </Grid.Column>
-            );
-          })}
-        </Grid.Row>
-      </Grid>
-    );
+                        className="horizontal-line"
+                        style={{ top: (i2 + 1) * this.hourHeight }}
+                        key={`line:${i2}`}
+                      />
+                    ))}
+                  </Clickable>
+                </Grid.Column>
+              );
+            })}
+          </Grid.Row>
+        </Grid>
+      </div>
+    )
   }
 }
