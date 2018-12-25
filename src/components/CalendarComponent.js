@@ -24,7 +24,6 @@ export default class CalendarComponent extends React.Component {
 
   // Google CalendarのデータをBigCalendarにマッピング
   events() {
-    console.log("events?",_.flatten(this.props.events.map(e=>e.events)))
     return _.flatten(
       this.props.events.map(e=>e.events)
     )
@@ -88,13 +87,12 @@ export default class CalendarComponent extends React.Component {
 
         processedEvents.push([level, e])
         return [level, e]
-      });
+      })
   }
 
   componentDidMount() {}
 
   render() {
-    console.log("render CalendarComponent",this.props)
     const startAt = moment().startOf("day")
     var eventsOfWeek = _.times(7, i => {
         const date = moment(startAt).add(i, "day")
@@ -105,10 +103,11 @@ export default class CalendarComponent extends React.Component {
     return (
       <div>
         <StickyBox>
+          <div className="time-header-wrap" style={{backgroundColor: 'white'}}>
+            <div className="time-header">
+            </div>
           <Grid columns="equal" className="calendar-header">
-            <Grid.Row className="day-header-row">
-              <Grid.Column width={this.timeHeaderWidth}>
-              </Grid.Column>
+            <Grid.Row>
               {_.times(7, i => {
                 const date = moment(startAt).add(i, "days")
                 return (
@@ -116,31 +115,39 @@ export default class CalendarComponent extends React.Component {
                     className="day-header"
                     key={`day-header:${i}`}
                   >
-                    <div className="day-label">
-                      { date.date() == 1 ? `${date.month()+1}/1` : date.date() }
-                    </div>
-                    <div className="wday-label">
-                      { date.format('ddd') }
+                    <div className="day-wrap">
+                      <div className="month-label">
+                        { (i == 0 || date.date() == 1) ? `${date.month()+1}/` : '' }
+                      </div>
+                      <div className="day-label">
+                        { date.date() }
+                      </div>
+                      <div className="wday-label">
+                        { date.format('ddd') }
+                      </div>
                     </div>
                   </Grid.Column>
                 )
               })}
             </Grid.Row>
           </Grid>
+          </div>
         </StickyBox>
+        <div className="time-header" style={{zIndex: -1}}>
+          {_.times(23, i => (
+            <div
+              className="time-label"
+              style={{ top: (i + 1) * this.hourHeight - 8 }}
+              key={`time-label:${i}`}
+            >
+              {i + 1}:00
+            </div> 
+          ))}
+        </div>
         <Grid columns="equal" className="calendar">
-          <Grid.Row >
-            <Grid.Column width={this.timeHeaderWidth} className="time-header">
-              {_.times(23, i => (
-                <div
-                  className="time-label"
-                  style={{ top: (i + 1) * this.hourHeight - 8 }}
-                  key={`time-label:${i}`}
-                >
-                  {i + 1}:00
-                </div>
-              ))}
-            </Grid.Column>
+{/**
+*/}
+          <Grid.Row>
             {_.times(7, i => {
               const date = moment(startAt).add(i, "days")
               return (
@@ -201,7 +208,7 @@ export default class CalendarComponent extends React.Component {
             })}
           </Grid.Row>
         </Grid>
-      </div>
+        </div>
     )
   }
 }

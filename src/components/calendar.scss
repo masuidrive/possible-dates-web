@@ -1,38 +1,11 @@
+$time-header-width: 40px;
+$day-header-height: 64px;
 
-.calendar-header {
-  margin-top: 0 !important;
-  height: 64px;
-  background-color: white;
-
-  .day-header-row {
-    padding: 0;
-  }
-
-  .day-header {
-    text-align: center;
-    
-    .day-label {
-      font-weight: bold;
-      font-size: 200%;
-      color: #888888;
-    }
-    .wday-label {
-      margin-top: 4px;
-      color: #aaaaaa;
-    }
-  }
-}
-
-.calendar {
-  margin: 0 !important;
-
-  .row {
-    padding: 0;
-  }
-
-  .time-header {
-    z-index: -1;
-  }
+.time-header {
+  width: $time-header-width;
+  height: $day-header-height;
+  position: absolute;
+  left: 0;
 
   .time-label {
     position: absolute;
@@ -41,7 +14,61 @@
     text-align: right;
     color: gray;
     width: 100%;
-    padding-right: 2px;
+    padding-right: 4px;
+  }
+}
+
+.calendar-header {
+  margin: 0 0 0 $time-header-width !important;
+  padding: 0 !important;
+  height: 64px;
+  
+  background-color: white;
+
+  .row {
+    padding: 0 !important;
+  }
+
+  .day-header {
+    padding: 0 !important;
+    vertical-align: bottom;
+    position: relative;
+
+    .day-wrap {
+    	position: absolute;
+      bottom: 0;
+      width: 100%;
+
+      .month-label {
+        text-align: center;
+        margin-left: -2em;
+        font-size: 80%;
+        line-height: 90%;
+        color: #888888;
+      }
+
+      .day-label {
+        text-align: center;
+        font-weight: bold;
+        font-size: 150%;
+        color: #888888;
+      }
+
+      .wday-label {
+        text-align: center;
+        margin-top: 4px;
+        color: #aaaaaa;
+      }
+    }
+  }
+}
+
+.calendar {
+  margin: 0 0 0 $time-header-width !important;
+  padding: 0 !important;
+
+  .row {
+    padding: 0 !important;
   }
 
   .day {
