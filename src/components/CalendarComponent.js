@@ -137,40 +137,7 @@ export default class CalendarComponent extends React.Component {
     })
 
     return (
-      <div>
-        <StickyBox className="fixed-header">
-          <div className="time-header-wrap" style={{backgroundColor: 'white'}}>
-            <div className="time-header">
-              <Icon name="bars" size="big" className="menu-icon" onClick={() => this.props.onOpenMenu()}/>
-            </div>
-            <Grid columns="equal" className="calendar-header">
-              <Grid.Row>
-                {_.times(7, i => {
-                  const date = moment(startAt).add(i, "days")
-                  return (
-                    <Grid.Column
-                      className="day-header"
-                      key={`day-header:${i}`}
-                    >
-                      <div className="day-wrap">
-                        <div className="month-label">
-                          { (i == 0 || date.date() == 1) ? `${date.month()+1}/` : '' }
-                        </div>
-                        <div className="day-label">
-                          { date.date() }
-                        </div>
-                        <div className="wday-label">
-                          { date.format('ddd') }
-                        </div>
-                      </div>
-                    </Grid.Column>
-                  )
-                })}
-              </Grid.Row>
-            </Grid>
-          </div>
-        </StickyBox>
-
+      <div className={this.props.className} style={this.props.style}>
         <div className="time-header" style={{zIndex: -1}}>
           {_.times(23, i => (
             <div
@@ -278,6 +245,8 @@ export default class CalendarComponent extends React.Component {
             })}
           </Grid.Row>
         </Grid>
+        <Button circular color='facebook' icon='paper plane' className="send-button" size="big"/>
+
         <Modal
           size="mini"
           open={!!this.state.timeSelector}

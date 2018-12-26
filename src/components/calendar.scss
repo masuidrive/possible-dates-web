@@ -2,12 +2,27 @@ $time-header-width: 40px;
 $day-header-height: 64px;
 $sticky-header-height: 64px;
 
+.calendar-component{
+  margin-top:$sticky-header-height;
+}
+
 .menu-icon {
   padding-top: 18px;
 }
 
+.send-button {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+}
+
 .fixed-header {
+  position: fixed;
   height: $sticky-header-height;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: red;
 }
 
 .time-header {
