@@ -1,5 +1,14 @@
 $time-header-width: 40px;
 $day-header-height: 64px;
+$sticky-header-height: 64px;
+
+.menu-icon {
+  padding-top: 18px;
+}
+
+.fixed-header {
+  height: $sticky-header-height;
+}
 
 .time-header {
   width: $time-header-width;
@@ -95,21 +104,30 @@ $day-header-height: 64px;
       border: 1px solid;
       z-index: -1;
 
+      &.candidate {
+        left: 2px;
+        right: 2px;
+      }
+
       &.level-1 {
         width: 90%;
         right: 1px;
       }
       &.level-2 {
-        width: 85%;
-        right: 3px;
+        width: 86%;
+        right: 1px;
       }
       &.level-3 {
-        width: 80%;
-        right: 5px;
+        width: 82%;
+        right: 1px;
       }
       &.level-4 {
-        width: 75%;
-        right: 7px;
+        width: 78%;
+        right: 1px;
+      }
+      &.level-5 {
+        width: 74%;
+        right: 1px;
       }
     }
 
@@ -120,5 +138,17 @@ $day-header-height: 64px;
       height: 1px;
       z-index: -2;
     }
+  }
+}
+
+
+.time-select-wrap {
+  text-align: center;
+  margin: 10px 0;
+
+  .time-select {
+    margin-bottom: 4px !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
   }
 }

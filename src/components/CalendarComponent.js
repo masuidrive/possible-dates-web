@@ -1,7 +1,7 @@
 import _ from "lodash"
 import React, { ReactNode, SyntheticEvent } from "react"
 import moment from "moment-timezone"
-import { Button, Icon, Grid, Segment,Sticky } from "semantic-ui-react"
+import { Button, Icon, Grid, Segment, Modal, Select, Dropdown } from "semantic-ui-react"
 import ReactCursorPosition from 'react-cursor-position'
 import Clickable from './shared/Clickable'
 import lightenDarkenColor from '../lib/lightenDarkenColor'
@@ -15,7 +15,11 @@ import { inspect } from "util"
 export default class CalendarComponent extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      candidates: [],//{start: moment(), end:moment().add(1, "hour")},{start: moment().add(15,"minutes"),end: moment().add(1, "hour").add(15,"minutes")}],
+      timeSelector: false,
+      sidebarVisibilty: true
+    }
     this.hourHeight = 64
     this.dayHeaderHeight = 64
     this.timeHeaderWidth = 1
@@ -61,6 +65,7 @@ export default class CalendarComponent extends React.Component {
   }
 
   candidates() {
+    return this.state.candidates
     return [{start: moment(), end:moment().add(1, "hour")},{start: moment().add(15,"minutes"),end: moment().add(1, "hour").add(15,"minutes")}]
   }
 
@@ -78,7 +83,7 @@ export default class CalendarComponent extends React.Component {
     return events
       .sort((a, b) => {
         var result = a.start.diff(b.start)
-        return result === 0 ? a.id.localeCompare(b.id) : result
+        return result === 0 && a.id && b.id ? a.id.localeCompare(b.id) : result
       })
       .map(e => {
         var level = 0
@@ -89,12 +94,31 @@ export default class CalendarComponent extends React.Component {
             pe[1].start.isSameOrBefore(e.end)
         )
         if (overlay) {
-          level = overlay[0] + 1
+          level = (overlay[0]%4 + 1)
         }
 
         processedEvents.push([level, e])
         return [level, e]
       })
+  }
+
+  toggleTime(time) {
+    if(_.find(this.candidates(),(e)=>e.start.isSame(time))) {
+      this.setState({
+        candidates: _.filter(this.state.candidates,(e)=>!e.start.isSame(time))
+      })
+    }
+    else {
+      this.setState({
+        candidates: _.concat(this.state.candidates, {start: time, end:moment(time).add(1, "hour")})
+      })
+    }
+  }
+
+  closeTimeSelector() {
+    this.setState({
+      timeSelector: false
+    })
   }
 
   componentDidMount() {
@@ -106,47 +130,47 @@ export default class CalendarComponent extends React.Component {
     var eventsOfWeek = _.times(7, i => {
       const date = moment(startAt).add(i, "day")
       return this.eventIndent(this.eventsOfDay(date).filter(e => !e.isAllDay(date)))
-    }
-  )
-  var candidatesOfWeek = _.times(7, i => {
-    const date = moment(startAt).add(i, "day")
-    return this.eventIndent(this.candidatesOfDay(date))
-  }
-)
+    })
+    var candidatesOfWeek = _.times(7, i => {
+      const date = moment(startAt).add(i, "day")
+      return this.eventIndent(this.candidatesOfDay(date))
+    })
 
     return (
       <div>
-        <StickyBox>
+        <StickyBox className="fixed-header">
           <div className="time-header-wrap" style={{backgroundColor: 'white'}}>
             <div className="time-header">
+              <Icon name="bars" size="big" className="menu-icon" onClick={() => this.props.onOpenMenu()}/>
             </div>
-          <Grid columns="equal" className="calendar-header">
-            <Grid.Row>
-              {_.times(7, i => {
-                const date = moment(startAt).add(i, "days")
-                return (
-                  <Grid.Column
-                    className="day-header"
-                    key={`day-header:${i}`}
-                  >
-                    <div className="day-wrap">
-                      <div className="month-label">
-                        { (i == 0 || date.date() == 1) ? `${date.month()+1}/` : '' }
+            <Grid columns="equal" className="calendar-header">
+              <Grid.Row>
+                {_.times(7, i => {
+                  const date = moment(startAt).add(i, "days")
+                  return (
+                    <Grid.Column
+                      className="day-header"
+                      key={`day-header:${i}`}
+                    >
+                      <div className="day-wrap">
+                        <div className="month-label">
+                          { (i == 0 || date.date() == 1) ? `${date.month()+1}/` : '' }
+                        </div>
+                        <div className="day-label">
+                          { date.date() }
+                        </div>
+                        <div className="wday-label">
+                          { date.format('ddd') }
+                        </div>
                       </div>
-                      <div className="day-label">
-                        { date.date() }
-                      </div>
-                      <div className="wday-label">
-                        { date.format('ddd') }
-                      </div>
-                    </div>
-                  </Grid.Column>
-                )
-              })}
-            </Grid.Row>
-          </Grid>
+                    </Grid.Column>
+                  )
+                })}
+              </Grid.Row>
+            </Grid>
           </div>
         </StickyBox>
+
         <div className="time-header" style={{zIndex: -1}}>
           {_.times(23, i => (
             <div
@@ -169,7 +193,11 @@ export default class CalendarComponent extends React.Component {
                 >
                   <Clickable
                     onClick={e => {
-                      console.log(i, parseInt(e.y/64,10))
+                      var start = moment(date).add(parseInt(e.y/64),"hour")
+                      this.setState({
+                        timeSelector: start,
+                        //candidates: _.concat(this.state.candidates, {start: start, end:moment(start).add(1, "hour")})
+                      })
                       e.preventDefault()
                   }}>
                     
@@ -223,7 +251,7 @@ export default class CalendarComponent extends React.Component {
                       return (
                         <div
                           key={event[1].id}
-                          className={`event level-${event[0] + 1}`}
+                          className={"event candidate"}
                           style={{
                             borderColor: "white",
                             color: "white",
@@ -232,7 +260,7 @@ export default class CalendarComponent extends React.Component {
                             height: (endPos - startPos) * (this.hourHeight / 60) - 1
                           }}
                         >
-                          {event[1].start.format("hh:mm")}
+                          {event[1].start.format("HH:mm")}
                         </div>
                       )
                     })}
@@ -246,10 +274,31 @@ export default class CalendarComponent extends React.Component {
                     ))}
                   </Clickable>
                 </Grid.Column>
-              );
+              )
             })}
           </Grid.Row>
         </Grid>
+        <Modal
+          size="mini"
+          open={!!this.state.timeSelector}
+          onClose={() => this.closeTimeSelector()}
+          closeIcon={true}
+        >
+          <Modal.Header>Select time at { moment(this.state.timeSelector).format("MM/DD") }</Modal.Header>
+          <div className="time-select-wrap">
+          {_.times(6, i => {
+            const date = moment(this.state.timeSelector).add((i-2)*15,"minutes")
+
+            return <div
+              key={`time:${i}`}
+            >
+            <Button className="time-select" primary={_.find(this.candidates(),(e)=>e.start.isSame(date))} onClick={() => this.toggleTime(date)}>
+            {date.format("HH:mm") }
+            </Button>
+            </div>
+          })}
+          </div>
+        </Modal>
         </div>
     )
   }
