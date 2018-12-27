@@ -1,7 +1,7 @@
 import _ from "lodash"
 import React, { ReactNode, SyntheticEvent } from "react"
 import moment from "moment-timezone"
-import { Button, Icon, Grid, Segment, Modal, Select, Dropdown } from "semantic-ui-react"
+import { Button, Icon, Grid, Segment, Modal, List, Dropdown, Divider } from "semantic-ui-react"
 import ReactCursorPosition from 'react-cursor-position'
 import Clickable from './shared/Clickable'
 import lightenDarkenColor from '../lib/lightenDarkenColor'
@@ -60,7 +60,7 @@ export default class CalendarComponent extends React.Component {
     const startAt = moment(date).startOf("day")
     const endAt = moment(startAt).endOf("day")
     return this.events().filter(
-      e => e.start.isSameOrBefore(endAt) && startAt.isSameOrBefore(e.end)
+      e => e.start.isBefore(endAt) && startAt.isSameOrBefore(e.end)
     )
   }
 
@@ -73,7 +73,7 @@ export default class CalendarComponent extends React.Component {
     const startAt = moment(date).startOf("day")
     const endAt = moment(startAt).endOf("day")
     return this.candidates().filter(
-      e => e.start.isSameOrBefore(endAt) && startAt.isSameOrBefore(moment(e.end))
+      e => e.start.isBefore(endAt) && startAt.isSameOrBefore(moment(e.end))
     )
   }
 
@@ -160,7 +160,7 @@ export default class CalendarComponent extends React.Component {
                 >
                   <Clickable
                     onClick={e => {
-                      var start = moment(date).add(parseInt(e.y/64),"hour")
+                      var start = moment(date).add(parseInt(e.y/(64/4))/4,"hour")
                       this.setState({
                         timeSelector: start,
                         //candidates: _.concat(this.state.candidates, {start: start, end:moment(start).add(1, "hour")})
@@ -245,7 +245,7 @@ export default class CalendarComponent extends React.Component {
             })}
           </Grid.Row>
         </Grid>
-        <Button circular color='facebook' icon='paper plane' className="send-button" size="big"/>
+        <Button circular color='facebook' icon='paper plane' className="send-button" size="huge" onClick={()=>{this.setState({sendModal: true})}}/>
 
         <Modal
           size="mini"
@@ -256,18 +256,40 @@ export default class CalendarComponent extends React.Component {
           <Modal.Header>Select time at { moment(this.state.timeSelector).format("MM/DD") }</Modal.Header>
           <div className="time-select-wrap">
           {_.times(6, i => {
-            const date = moment(this.state.timeSelector).add((i-2)*15,"minutes")
+            const startAt = moment(this.state.timeSelector).add((i-2)*15,"minutes")
+            const endAt = moment(startAt).add(1, "hour")
+            const overlap = !!_.find(this.events(),
+              e => e.start.isBefore(endAt) && startAt.isSameOrBefore(moment(e.end)) && !e.isAllDay(startAt)
+            )
+            const active = !!_.find(this.candidates(),(e)=>e.start.isSame(startAt))
 
-            return <div
-              key={`time:${i}`}
-            >
-            <Button className="time-select" primary={_.find(this.candidates(),(e)=>e.start.isSame(date))} onClick={() => this.toggleTime(date)}>
-            {date.format("HH:mm") }
-            </Button>
-            </div>
+            return (
+              <div key={`time:${i}`} className={startAt.minutes()==0 && i > 0? "divider" : ""}>
+                <Button className="time-select" basic={overlap && !active} primary={active} onClick={() => this.toggleTime(startAt)}>
+                  {startAt.format("HH:mm") }
+                </Button>
+              </div>
+            )
           })}
           </div>
         </Modal>
+        
+        <Modal
+          size="mini"
+          open={!!this.state.sendModal}
+          onClose={() => {this.setState({sendModal: false})}}
+          closeIcon={true}
+        >
+          <Modal.Header>Send candidates</Modal.Header>
+          <div className="time-select-wrap">
+          <List items={ _.map(this.candidates(), (event,i) => {
+            return(
+              `${event.start.format("MM/DD HH:mm")} - ${moment(event.start).add(1,'hour').format("HH:mm")}`
+            )
+          })}/>
+          </div>
+        </Modal>
+
         </div>
     )
   }

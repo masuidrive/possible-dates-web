@@ -22,8 +22,8 @@ $sticky-header-height: 64px;
   width: 100%;
   top: 0;
   left: 0;
-  background-color: red;
 }
+
 
 .time-header {
   width: $time-header-width;
@@ -117,11 +117,12 @@ $sticky-header-height: 64px;
       overflow: hidden;
       background-color: white;
       border: 1px solid;
-      z-index: -1;
+      z-index: -2;
 
       &.candidate {
         left: 2px;
         right: 2px;
+        z-index: -1;
       }
 
       &.level-1 {
@@ -159,7 +160,17 @@ $sticky-header-height: 64px;
 
 .time-select-wrap {
   text-align: center;
-  margin: 10px 0;
+  margin: 10px auto;
+  width: 180px;
+
+  .divider {
+    border-top: 1px solid #e8e8e8;
+    padding-top: 4px;
+  }
+  
+  .ui.basic.button {
+    color: #aaaaaa !important;
+  }
 
   .time-select {
     margin-bottom: 4px !important;

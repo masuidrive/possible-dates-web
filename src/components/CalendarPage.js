@@ -5,8 +5,9 @@ import React from "react"
 import { inject, observer, Provider } from "mobx-react"
 import CalendarComponent from  "./CalendarComponent"
 import stores from '../stores'
-import { Button, Icon, Grid, Segment, Modal, Menu, Header, Image } from "semantic-ui-react"
+import { Button, Icon, Grid, Segment, Modal, Menu, List, Checkbox, Image, Sidebar, Header } from "semantic-ui-react"
 import moment from "moment-timezone"
+import "./CalendarSidebar.scss"
 
 @inject("calendarStore")
 @observer
@@ -26,10 +27,11 @@ export default class extends React.Component {
   }
 
   handleSidebarHide(e) {
-    e.preventDefault()
     this.setState({
       sidebarVisibilty: false
     })
+    console.log('handleSidebarHide',e)
+    e.stopPropagation()
   }
 
   openMenu() {
@@ -40,6 +42,7 @@ export default class extends React.Component {
 
   render() {
     const calendars = this.props.calendarStore.calendars
+    console.log(calendars)
     return (
       <div>
         <div className="fixed-header">
@@ -75,6 +78,23 @@ export default class extends React.Component {
           </div>
         </div>
         <CalendarComponent className="calendar-component" events={ this.props.calendarStore.events || [] } onOpenMenu={() => this.openMenu()}/>
+        <Sidebar
+          as={Segment}
+          animation='push'
+          icon='labeled'
+          onHide={(e) => this.handleSidebarHide(e)}
+          vertical
+          visible={this.state.sidebarVisibilty}
+          width='wide'
+          className="sidemenu"
+          color="red"
+        >
+          <Header size='medium'>Calendars</Header>
+          { (calendars || []).map(c => 
+            <div key={c.id} className="calendar-selector"><Checkbox label={c.name}/></div>
+          ) }
+        </Sidebar>
+         
         {/*
         <Modal trigger={<Button>Show Modal</Button>}>
     <Modal.Header>Select a Photo</Modal.Header>
