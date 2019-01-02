@@ -1,17 +1,21 @@
-// store.js
 import { observable, action, computed } from "mobx"
-// MyComponent.js
 import React from "react"
 import { inject, observer, Provider } from "mobx-react"
 import CalendarComponent from  "./CalendarComponent"
 import stores from '../stores'
 import { Button, Icon, Grid, Segment, Modal, Menu, List, Checkbox, Image, Sidebar, Header } from "semantic-ui-react"
-import moment from "moment-timezone"
+import { DateTime } from "luxon"
 import "./CalendarSidebar.scss"
 
 @inject("calendarStore")
+@inject("sessionStore")
 @observer
 export default class extends React.Component {
+  state = {
+    sidebarVisibilty: false,
+    date: DateTime.local().startOf('week').toJSDate()
+  }
+
   componentDidMount() {
     this.props.calendarStore.loadCalendarList()
     if(window.scrollY == 0) {
@@ -22,7 +26,6 @@ export default class extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      sidebarVisibilty: false
     }
   }
 
@@ -30,7 +33,6 @@ export default class extends React.Component {
     this.setState({
       sidebarVisibilty: false
     })
-    console.log('handleSidebarHide',e)
     e.stopPropagation()
   }
 
@@ -42,7 +44,6 @@ export default class extends React.Component {
 
   render() {
     const calendars = this.props.calendarStore.calendars
-    console.log(calendars)
     return (
       <div>
         <div className="fixed-header">
@@ -53,7 +54,6 @@ export default class extends React.Component {
             <Grid columns="equal" className="calendar-header">
               <Grid.Row>
                 {_.times(7, i => {
-                  const date = moment().add(i, "days")
                   return (
                     <Grid.Column
                       className="day-header"
@@ -61,7 +61,7 @@ export default class extends React.Component {
                     >
                       <div className="day-wrap">
                         <div className="month-label">
-                          { (i == 0 || date.date() == 1) ? `${date.month()+1}/` : '' }
+                          { (i == 0 || date.plus({days: i}).day == 1) ? `${date.plus({days: i}).month}/` : '' }
                         </div>
                         <div className="day-label">
                           { date.date() }
@@ -77,7 +77,13 @@ export default class extends React.Component {
             </Grid>
           </div>
         </div>
-        <CalendarComponent className="calendar-component" events={ this.props.calendarStore.events || [] } onOpenMenu={() => this.openMenu()}/>
+        <CalendarComponent
+          className="calendar-component2"
+          date={new Date()}
+          events={this.props.calendarStore.events || []}
+          candidates={[]}
+          onOpenMenu={() => this.openMenu()}
+        />
         <Sidebar
           as={Segment}
           animation='push'
@@ -85,7 +91,6 @@ export default class extends React.Component {
           onHide={(e) => this.handleSidebarHide(e)}
           vertical
           visible={this.state.sidebarVisibilty}
-          width='wide'
           className="sidemenu"
           color="red"
         >
@@ -94,21 +99,6 @@ export default class extends React.Component {
             <div key={c.id} className="calendar-selector"><Checkbox label={c.name}/></div>
           ) }
         </Sidebar>
-         
-        {/*
-        <Modal trigger={<Button>Show Modal</Button>}>
-    <Modal.Header>Select a Photo</Modal.Header>
-    <Modal.Content image>
-      <Image wrapped size='medium' src='https://react.semantic-ui.com/images/avatar/large/rachel.png' />
-      <Modal.Description>
-        <Header>Default Profile Image</Header>
-        <p>We've found the following gravatar image associated with your e-mail address.</p>
-        <p>Is it okay to use this photo?</p>
-      </Modal.Description>
-    </Modal.Content>
-  </Modal>
-          calendars ? calendars.map((c) => c.name).join(", ") : "empty"
-        */}
       </div>
     )
   }

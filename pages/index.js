@@ -4,7 +4,7 @@ import { observable, action, computed } from "mobx"
 import React from "react"
 import { inject, observer, Provider } from "mobx-react"
 import { SessionSignedIn, SessionSignedOut, SessionNotReady } from "../src/components/SessionComponents"
-import CalendarPage from "../src/components/CalendarPage"
+import CalendarPage from "../src/components/CalendarPage/index"
 import stores from '../src/stores'
 
 const App = inject("sessionStore")(observer(({sessionStore}) => (

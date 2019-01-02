@@ -1,0 +1,77 @@
+
+.fixed-header {
+  position: fixed;
+  height: $sticky-header-height;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+.calendar-component{
+  margin-top:$sticky-header-height;
+}
+
+.menu-icon {
+  padding-top: 18px;
+}
+.time-header {
+  width: $time-header-width;
+  height: $day-header-height;
+  position: absolute;
+  left: 0;
+
+  .time-label {
+    position: absolute;
+    font-size: 12px;
+    left: 0;
+    text-align: right;
+    color: gray;
+    width: 100%;
+    padding-right: 4px;
+  }
+}
+
+.calendar-header {
+  margin: 0 0 0 $time-header-width !important;
+  padding: 0 !important;
+  height: 64px;
+  
+  background-color: white;
+
+  .row {
+    padding: 0 !important;
+  }
+
+  .day-header {
+    padding: 0 !important;
+    vertical-align: bottom;
+    position: relative;
+
+    .day-wrap {
+    	position: absolute;
+      bottom: 0;
+      width: 100%;
+
+      .month-label {
+        text-align: center;
+        margin-left: -2em;
+        font-size: 80%;
+        line-height: 90%;
+        color: #888888;
+      }
+
+      .day-label {
+        text-align: center;
+        font-weight: bold;
+        font-size: 150%;
+        color: #888888;
+      }
+
+      .wday-label {
+        text-align: center;
+        margin-top: 4px;
+        color: #aaaaaa;
+      }
+    }
+  }
+}

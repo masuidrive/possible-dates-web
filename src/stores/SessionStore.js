@@ -1,6 +1,7 @@
 import { observable, action, computed } from "mobx"
 import firebase from "firebase/app"
 import "firebase/auth"
+import "firebase/firestore"
 import Config from "../apiGoogleconfig.js"
 import { isRenderingOn } from "../utils"
 
@@ -65,7 +66,7 @@ export default class SessionStore {
           .reloadAuthResponse()
           .then(resp => {
             this.user = googleUser
-            console.log(resp, resp.code)
+            console.log("googleUser1:",googleUser)
           })
           .catch(err => {
             console.log(err)
@@ -90,8 +91,35 @@ export default class SessionStore {
           var googleProfile = googleUser.getBasicProfile()
           this.user = googleUser
           this.status = "ready"
+          console.log(googleProfile.getId())
+
+          var db = firebase.firestore()
+          /*
+          db.collection("latters").add({
+            author_id: googleProfile.getId(),
+            test: "CA",
+            country: "USA"
+          })
+          .then(function(docRef) {
+              console.log("Document successfully written!");
+          })
+          .catch(function(error) {
+              console.error("Error writing document: ", error);
+          });*/
+          db.collection("latters").doc("Hoge").get().then(function(doc) {
+            if (doc.exists) {
+                console.log("Document data:", doc.data());
+            } else {
+                // doc.data() will be undefined in this case
+                console.log("No such document!");
+            }
+        }).catch(function(error) {
+            console.log("Error getting document:", error);
+        })
+
         })
         .catch(err => {
+          console.log(err)
           this.user = undefined
           this.status = "ready"
         })
@@ -121,6 +149,7 @@ export default class SessionStore {
         this.updateSigninStatus(
           this.gapi.auth2.getAuthInstance().isSignedIn.get()
         )
+        console.log("isSignedIn:",this.gapi.auth2.getAuthInstance().isSignedIn.get())
       })
       .catch(err => {
         this.status = "error:load"

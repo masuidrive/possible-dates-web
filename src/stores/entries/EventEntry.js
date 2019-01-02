@@ -1,23 +1,37 @@
-import { observable, action } from 'mobx';
-import moment from "moment-timezone";
+import { observable, action } from "mobx"
+import { DateTime } from "luxon"
 
 export default class EventEntry {
-  constructor(data, calendar){
-    // data is google calendar format
+  constructor(data, calendar) {
     this.id = data.id
     this.title = data.summary
-    this.backgroundColor = calendar.backgroundColor
-    this.start = moment(data.start.dateTime || data.start.date)
-    if(data.end.dateTime) {
-      this.end = moment(data.end.dateTime)
-    }
-    else {
-      this.end = moment(data.end.date).add(1, 'days')
+    this.color = calendar.backgroundColor
+    this.start = DateTime.fromISO(
+      data.start.dateTime || data.start.date
+    ).toJSDate()
+
+    if (data.end.dateTime) {
+      this.end = DateTime.fromISO(data.end.dateTime).toJSDate()
+    } else {
+      this.end = DateTime.fromISO(data.end.date)
+        .plus({ days: 1 })
+        .toJSDate()
     }
   }
 
+  get startDateTime() {
+    return DateTime.fromJSDate(this.start)
+  }
+
+  get endDateTime() {
+    return DateTime.fromJSDate(this.end)
+  }
+
   isAllDay(date) {
-    const date_ = moment(date)
-    return this.start.isSameOrBefore(date_.startOf('day')) && date_.endOf('day').isSameOrBefore(this.end)
+    const date_ = DateTime.fromJSDate(date)
+    return (
+      this.startDateTime.valueOf() <= date.startOf("day").valueOf() &&
+      date.endOf("day").valueOf() <= this.endDateTime.valueOf()
+    )
   }
 }
