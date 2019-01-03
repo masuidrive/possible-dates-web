@@ -1,6 +1,6 @@
 import { DateTime } from "luxon"
 
-export default class CandidateEntry {
+export default class AvailableEntry {
   constructor(startAt, endAt) {
     this.startAt = startAt
     this.endAt = endAt

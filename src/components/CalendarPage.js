@@ -1,9 +1,21 @@
 import { observable, action, computed } from "mobx"
 import React from "react"
 import { inject, observer, Provider } from "mobx-react"
-import CalendarComponent from  "./CalendarComponent"
-import stores from '../stores'
-import { Button, Icon, Grid, Segment, Modal, Menu, List, Checkbox, Image, Sidebar, Header } from "semantic-ui-react"
+import CalendarComponent from "./CalendarComponent"
+import stores from "../stores"
+import {
+  Button,
+  Icon,
+  Grid,
+  Segment,
+  Modal,
+  Menu,
+  List,
+  Checkbox,
+  Image,
+  Sidebar,
+  Header
+} from "semantic-ui-react"
 import { DateTime } from "luxon"
 import "./CalendarSidebar.scss"
 
@@ -13,20 +25,21 @@ import "./CalendarSidebar.scss"
 export default class extends React.Component {
   state = {
     sidebarVisibilty: false,
-    date: DateTime.local().startOf('week').toJSDate()
+    date: DateTime.local()
+      .startOf("week")
+      .toJSDate()
   }
 
   componentDidMount() {
     this.props.calendarStore.loadCalendarList()
-    if(window.scrollY == 0) {
+    if (window.scrollY == 0) {
       window.scroll(0, 500)
     }
   }
 
   constructor(props) {
     super(props)
-    this.state = {
-    }
+    this.state = {}
   }
 
   handleSidebarHide(e) {
@@ -47,28 +60,31 @@ export default class extends React.Component {
     return (
       <div>
         <div className="fixed-header">
-          <div className="time-header-wrap" style={{backgroundColor: 'white'}}>
+          <div
+            className="time-header-wrap"
+            style={{ backgroundColor: "white" }}
+          >
             <div className="time-header">
-              <Icon name="bars" size="big" className="menu-icon" onClick={() => this.openMenu()}/>
+              <Icon
+                name="bars"
+                size="big"
+                className="menu-icon"
+                onClick={() => this.openMenu()}
+              />
             </div>
             <Grid columns="equal" className="calendar-header">
               <Grid.Row>
                 {_.times(7, i => {
                   return (
-                    <Grid.Column
-                      className="day-header"
-                      key={`day-header:${i}`}
-                    >
+                    <Grid.Column className="day-header" key={`day-header:${i}`}>
                       <div className="day-wrap">
                         <div className="month-label">
-                          { (i == 0 || date.plus({days: i}).day == 1) ? `${date.plus({days: i}).month}/` : '' }
+                          {i == 0 || date.plus({ days: i }).day == 1
+                            ? `${date.plus({ days: i }).month}/`
+                            : ""}
                         </div>
-                        <div className="day-label">
-                          { date.date() }
-                        </div>
-                        <div className="wday-label">
-                          { date.format('ddd') }
-                        </div>
+                        <div className="day-label">{date.date()}</div>
+                        <div className="wday-label">{date.format("ddd")}</div>
                       </div>
                     </Grid.Column>
                   )
@@ -81,23 +97,25 @@ export default class extends React.Component {
           className="calendar-component2"
           date={new Date()}
           events={this.props.calendarStore.events || []}
-          candidates={[]}
+          availables={[]}
           onOpenMenu={() => this.openMenu()}
         />
         <Sidebar
           as={Segment}
-          animation='push'
-          icon='labeled'
-          onHide={(e) => this.handleSidebarHide(e)}
+          animation="push"
+          icon="labeled"
+          onHide={e => this.handleSidebarHide(e)}
           vertical
           visible={this.state.sidebarVisibilty}
           className="sidemenu"
           color="red"
         >
-          <Header size='medium'>Calendars</Header>
-          { (calendars || []).map(c => 
-            <div key={c.id} className="calendar-selector"><Checkbox label={c.name}/></div>
-          ) }
+          <Header size="medium">Calendars</Header>
+          {(calendars || []).map(c => (
+            <div key={c.id} className="calendar-selector">
+              <Checkbox label={c.name} />
+            </div>
+          ))}
         </Sidebar>
       </div>
     )

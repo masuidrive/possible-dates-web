@@ -13,10 +13,11 @@ import CalendarComponent from "./CalendarComponent"
 import "./index.scss"
 import "semantic-ui-css/semantic.css"
 
-import CandidateEntry from "../../stores/entries/CandidateEntry"
+import AvailableEntry from "../../stores/entries/AvailableEntry"
 
 @inject("calendarStore")
 @inject("sessionStore")
+@inject("availabilityEditorStore")
 @observer
 export default class extends React.Component {
   state = {
@@ -68,14 +69,7 @@ export default class extends React.Component {
         <CalendarComponent
           date={this.state.currentDate.toDate()}
           events={events}
-          candidates={[
-            new CandidateEntry(
-              new Date(),
-              DateTime.local()
-                .plus({ hours: 1 })
-                .toJSDate()
-            )
-          ]}
+          availables={this.props.availabilityEditorStore.availables}
           onOpenMenu={this.handleShowSidebar}
           className="calendar-component"
         />
