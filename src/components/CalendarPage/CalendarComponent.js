@@ -1,4 +1,5 @@
 import React, { ReactNode, SyntheticEvent } from "react"
+import { inject, observer, Provider } from "mobx-react"
 import PropTypes from "prop-types"
 import moment from "moment-timezone"
 import {
@@ -20,6 +21,9 @@ import EventEntry from "../../stores/entries/EventEntry"
 import AvailableEntry from "../../stores/entries/AvailableEntry"
 import _ from "lodash"
 
+@inject("calendarStore")
+@inject("availabilityEditorStore")
+@observer
 export default class CalendarComponent extends React.Component {
   static propTypes = {
     date: PropTypes.instanceOf(Date).isRequired,
@@ -99,13 +103,25 @@ export default class CalendarComponent extends React.Component {
     })
   }
 
+  async componentDidMount() {
+    const startAt = this.date.startOf("day")
+    const eventsOfWeek = await Promise.all(
+      _.times(7, async i => {
+        const date = startAt.plus({ days: i })
+        const events = await this.props.calendarStore.getEvents(
+          date.toJSDate(),
+          date.endOf("day").toJSDate()
+        )
+        console.log(i, events)
+        return this.eventIndent(events)
+      })
+    )
+    console.log("eventsOfWeek", eventsOfWeek)
+    this.setState({ eventsOfWeek })
+  }
+
   render() {
     const startAt = this.date.startOf("day")
-
-    const eventsOfWeek = _.times(7, i => {
-      const date = startAt.plus({ days: i })
-      return this.eventIndent(this.eventsOfDay(this.props.events, date))
-    })
 
     const availablesOfWeek = _.times(7, i => {
       const date = startAt.plus({ days: i })
@@ -147,27 +163,29 @@ export default class CalendarComponent extends React.Component {
                   >
                     <div className="vertical-line" />
 
-                    {eventsOfWeek[i].map(({ level, event }) => {
-                      let color = lightenDarkenColor(event.color, -30)
-                      return event.isAllDay(date) ? (
-                        undefined
-                      ) : (
-                        <Frame
-                          key={event.id}
-                          className={`event level-${level + 1}`}
-                          date={date}
-                          start={event.startDateTime}
-                          end={event.endDateTime}
-                          style={{
-                            borderColor: color,
-                            color: color,
-                            backgroundColor: "#fafafa"
-                          }}
-                        >
-                          {event.title}
-                        </Frame>
-                      )
-                    })}
+                    {this.state.eventsOfWeek
+                      ? this.state.eventsOfWeek[i].map(({ level, event }) => {
+                          let color = lightenDarkenColor(event.color, -30)
+                          return event.isAllDay(date) ? (
+                            undefined
+                          ) : (
+                            <Frame
+                              key={event.id}
+                              className={`event level-${level + 1}`}
+                              date={date}
+                              start={event.startDateTime}
+                              end={event.endDateTime}
+                              style={{
+                                borderColor: color,
+                                color: color,
+                                backgroundColor: "#fafafa"
+                              }}
+                            >
+                              {event.title}
+                            </Frame>
+                          )
+                        })
+                      : undefined}
 
                     {availablesOfWeek[i].map(event => {
                       return (

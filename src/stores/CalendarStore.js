@@ -4,6 +4,9 @@ import moment from "moment-timezone"
 import CalendarEntry from "./entries/CalendarEntry"
 import CalendarListLoader from "./loaders/CalendarListLoader"
 import EventLoader from "./loaders/EventLoader"
+import { DateTime } from "luxon"
+import isOverlapped from "../lib/isOverlapped"
+import { resolve } from "any-promise"
 
 export class FetchEventsRequest {
   constructor(startAt, endAt) {
@@ -14,10 +17,9 @@ export class FetchEventsRequest {
 }
 
 export default class CalendarStore {
-  @observable calendars = undefined
-  @observable eventsOfDay = {}
+  @observable _calendars = undefined
   @observable activeCalendars = []
-  @observable calendarListLoader = undefined
+  @observable loaderPromise = undefined
   @observable events = []
 
   constructor(rootStore) {
@@ -26,40 +28,69 @@ export default class CalendarStore {
 
   // google calendar listを読み込む
   // 最初に一回読み込むだけでいい。localStorageでcacheしてもいいかも
-  @action async loadCalendarList() {
-    console.log("loadCalendarList")
-    if (this.calendarListLoader !== undefined) return
+  @action calendarList() {
+    return new Promise((resolve, reject) => {
+      if (this._calendars) return resolve(this._calendars)
+      if (this.loaderPromise) {
+        this.loaderPromise
+          .then(loader => {
+            resolve(this._calendars)
+          })
+          .catch(reason => {
+            reject(reason)
+          })
+      } else {
+        const gapi = this.rootStore.sessionStore.gapi
+        let calendarListLoader = new CalendarListLoader(gapi)
+        this.loaderPromise = calendarListLoader.perform()
 
-    const gapi = this.rootStore.sessionStore.gapi
-    this.calendarListLoader = new CalendarListLoader(gapi)
-    var loader = await this.calendarListLoader.perform()
-
-    if(loader.isUnauthorized) {
-      console.log("loadCalendarList: 5")
-    }
-    else if(loader.hasError) {
-      console.log("loadCalendarList: 6")
-    }
-    else {
-      this.calendars = loader.items
-    }
-    this.calendarListLoader = undefined
-    this.loadEvents(moment(), moment().add(7, "days"))
+        this.loaderPromise
+          .then(loader => {
+            if (loader.isUnauthorized) {
+              console.log("loadCalendarList: 5")
+            } else if (loader.hasError) {
+              console.log("loadCalendarList: 6")
+            } else {
+              this._calendars = loader.items
+            }
+            this.loaderPromise = undefined
+          })
+          .catch(reason => {
+            this.loaderPromise = undefined
+            reject(reason)
+          })
+      }
+      resolve(this._calendars)
+    })
   }
 
+  // 特定区間のカレンダーデータをAPIで呼び出す
   @action async loadEvents(startAt, endAt) {
     const gapi = this.rootStore.sessionStore.gapi
-    const loader = new EventLoader(gapi, this.calendars, startAt, endAt)
+    const loader = new EventLoader(
+      gapi,
+      (await this.calendarList()) || [],
+      startAt,
+      endAt
+    )
     this.events = await loader.perform()
     this.events = loader.items
-/*
-    console.log>(">>>>>result")
-    loader.items.forEach(item => {
-      item.events.forEach(event => {
-        console.log(event)
-      })
-    })
-    console.log("<<<<<result")
-*/
+  }
+
+  //
+  @action async getEvents(startAt, endAt) {
+    const _startAt = DateTime.fromJSDate(startAt).valueOf()
+    const _endAt = DateTime.fromJSDate(endAt).valueOf()
+    await this.loadEvents(startAt, endAt)
+
+    const events = _.flatten((this.events || []).map(e => e.events))
+    return events.filter(e =>
+      isOverlapped(
+        _startAt,
+        _endAt,
+        e.startDateTime.valueOf(),
+        e.endDateTime.valueOf() - 1
+      )
+    )
   }
 }

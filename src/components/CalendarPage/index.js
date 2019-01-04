@@ -22,7 +22,7 @@ import AvailableEntry from "../../stores/entries/AvailableEntry"
 export default class extends React.Component {
   state = {
     sidebarVisibilty: false,
-    currentDate: moment().startOf("week")
+    currentDate: DateTime.local().startOf("week")
   }
 
   constructor(props) {
@@ -31,13 +31,23 @@ export default class extends React.Component {
     this.handleShowSidebar = this.showSidebar.bind(this)
   }
 
-  componentDidMount() {
-    this.props.calendarStore.loadCalendarList()
-
+  async componentDidMount() {
     // ロード時に8AMぐらいまでページ位置
     if (window.scrollY == 0) {
       window.scroll(0, 500)
     }
+
+    this.setState({
+      calendars: await this.props.calendarStore.calendarList(),
+      events: _.flatten(
+        (
+          (await this.props.calendarStore.getEvents(
+            this.state.currentDate.toJSDate(),
+            this.state.currentDate.plus({ weeks: 1 }).toJSDate()
+          )) || []
+        ).map(e => e.events)
+      )
+    })
   }
 
   hideSidebar(e) {
@@ -55,26 +65,21 @@ export default class extends React.Component {
   }
 
   render() {
-    const calendars = this.props.calendarStore.calendars
-    const events = _.flatten(
-      (this.props.calendarStore.events || []).map(e => e.events)
-    )
-
     return (
       <div>
         <DaysHeaderComponent
-          date={this.state.currentDate.toDate()}
+          date={this.state.currentDate.toJSDate()}
           onShowMenu={this.handleShowSidebar}
         />
         <CalendarComponent
-          date={this.state.currentDate.toDate()}
-          events={events}
+          date={this.state.currentDate.toJSDate()}
+          events={this.state.events || []}
           availables={this.props.availabilityEditorStore.availables}
           onOpenMenu={this.handleShowSidebar}
           className="calendar-component"
         />
         <SidebarComponent
-          calendars={calendars}
+          calendars={this.state.calendars}
           visibility={this.state.sidebarVisibilty}
           onHide={this.handleHideSidebar}
         />

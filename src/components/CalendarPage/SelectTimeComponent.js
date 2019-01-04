@@ -18,8 +18,10 @@ import AvailableEntry from "../../stores/entries/AvailableEntry"
 import _ from "lodash"
 import stores from "../../stores"
 import { observer, inject } from "mobx-react"
+import { DateTime } from "luxon"
 
-@inject("AvailabilityEditorStore")
+@inject("calendarStore")
+@inject("availabilityEditorStore")
 @observer
 export default class SelectTimeComponent extends React.Component {
   render() {
