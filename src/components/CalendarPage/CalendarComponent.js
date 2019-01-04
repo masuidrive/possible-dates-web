@@ -188,6 +188,7 @@ export default class CalendarComponent extends React.Component {
                       : undefined}
 
                     {availablesOfWeek[i].map(event => {
+                      console.log("ID", i, event)
                       return (
                         <Frame
                           key={event.id}

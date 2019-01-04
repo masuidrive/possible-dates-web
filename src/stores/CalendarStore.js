@@ -6,6 +6,7 @@ import CalendarListLoader from "./loaders/CalendarListLoader"
 import EventLoader from "./loaders/EventLoader"
 import { DateTime } from "luxon"
 import isOverlapped from "../lib/isOverlapped"
+import promiseCache from "../lib/promiseCache"
 import { resolve } from "any-promise"
 
 export class FetchEventsRequest {
@@ -29,6 +30,13 @@ export default class CalendarStore {
   // google calendar listを読み込む
   // 最初に一回読み込むだけでいい。localStorageでcacheしてもいいかも
   @action calendarList() {
+    return promiseCache(this, "_cachedCalendars", async () => {
+      const gapi = this.rootStore.sessionStore.gapi
+      let calendarListLoader = new CalendarListLoader(gapi)
+      let calendarList = await calendarListLoader.perform()
+      return calendarList.items
+    })
+
     return new Promise((resolve, reject) => {
       if (this._calendars) return resolve(this._calendars)
       if (this.loaderPromise) {
