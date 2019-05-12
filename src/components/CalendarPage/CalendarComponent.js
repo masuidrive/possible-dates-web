@@ -112,11 +112,9 @@ export default class CalendarComponent extends React.Component {
           date.toJSDate(),
           date.endOf("day").toJSDate()
         )
-        console.log(i, events)
         return this.eventIndent(events)
       })
     )
-    console.log("eventsOfWeek", eventsOfWeek)
     this.setState({ eventsOfWeek })
   }
 
@@ -158,11 +156,10 @@ export default class CalendarComponent extends React.Component {
                         timeSelector: start
                         //availables: _.concat(this.state.availables, {start: start, end:moment(start).add(1, "hour")})
                       })
-                      e.preventDefault()
                     }}
                   >
                     <div className="vertical-line" />
-
+                    {console.log(this.state.eventsOfWeek)}
                     {this.state.eventsOfWeek
                       ? this.state.eventsOfWeek[i].map(({ level, event }) => {
                           let color = lightenDarkenColor(event.color, -30)
@@ -170,7 +167,9 @@ export default class CalendarComponent extends React.Component {
                             undefined
                           ) : (
                             <Frame
-                              key={event.id}
+                              key={`${
+                                event.id
+                              }:${event.startDateTime.toMillis()}:${level}`}
                               className={`event level-${level + 1}`}
                               date={date}
                               start={event.startDateTime}
@@ -191,7 +190,9 @@ export default class CalendarComponent extends React.Component {
                       console.log("ID", i, event)
                       return (
                         <Frame
-                          key={event.id}
+                          key={`${
+                            event.id
+                          }:${event.startDateTime.toMillis()}:${level}`}
                           className={"event candidate"}
                           date={date}
                           start={event.startDateTime}
